@@ -1,4 +1,4 @@
-#include "kube.hpp"
+#include "lib/kube.hpp"
 #include <gtest/gtest.h>
 
 TEST(Kube, Config) {

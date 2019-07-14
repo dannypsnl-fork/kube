@@ -1,0 +1,6 @@
+cc_library(
+    name = "kube",
+    srcs = ["_config.hpp"],
+    hdrs = ["kube.hpp"],
+    visibility = ["//visibility:public"],
+)
