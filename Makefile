@@ -1,12 +1,7 @@
 all: test
-.PHONY: test install format
+.PHONY: test format
 test:
-	@mkdir -p build/
-	@cd build/ &&cmake .. && make
-	@./build/tests/tests
-install:
-	@mkdir -p build/
-	@cd build/ &&cmake .. && make install
+	@CC=clang bazel test test:kube-test --test_output=errors
 format:
 	@clang-format -i $(shell find include | grep hpp)
 	@clang-format -i $(shell find tests | grep cpp)

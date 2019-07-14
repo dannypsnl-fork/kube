@@ -10,3 +10,8 @@ Just put the `include` directory into search path and write:
 ```
 #include "kube.hpp"
 ```
+
+### Develop
+
+test: `make test`
+
