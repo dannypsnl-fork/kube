@@ -34,10 +34,10 @@ struct Config {
   //   | InCluster
   struct Path;
 
-private:
+ private:
   struct inCluster;
 
-public:
+ public:
   static inCluster InCluster;
 };
 
@@ -49,7 +49,7 @@ struct Config::Path {
     return config();
   }
 
-private:
+ private:
   std::string _path;
 };
 
