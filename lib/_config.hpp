@@ -30,7 +30,7 @@ bool operator==(config l_cfg, config r_cfg) {
 }
 
 struct Config {
-  virtual config get_config() = 0;
+  virtual config get_config() const = 0;
   virtual ~Config() {}
 
   // Define the tagged union types
@@ -46,10 +46,10 @@ struct Config {
   static inCluster InCluster;
 };
 
-struct Config::Path {
+struct Config::Path : public Config {
   Path() = delete;
   Path(std::string path) : _path(path) {}
-  config get_config() {
+  config get_config() const {
     // TODO: complete the config get by path
     return config();
   }
@@ -62,8 +62,8 @@ bool is_empty(const char *c_str) {
   return c_str == nullptr || std::char_traits<char>::length(c_str);
 }
 
-struct Config::inCluster {
-  config get_config() {
+struct Config::inCluster : public Config {
+  config get_config() const {
     char *host = std::getenv("KUBERNETES_SERVICE_HOST");
     char *port = std::getenv("KUBERNETES_SERVICE_PORT");
     if (is_empty(host) || is_empty(port)) {
