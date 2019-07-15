@@ -1,8 +1,13 @@
+#ifndef KUBE_HEADER_CONFIG
+#define KUBE_HEADER_CONFIG
+
 #include <cstdlib>
 #include <exception>
 #include <fstream>
 #include <iostream>
 #include <string>
+
+namespace kube {
 
 struct NotInCluster : public std::exception {
   const char *what() const throw() { return "not in cluster"; }
@@ -76,3 +81,7 @@ struct Config::inCluster {
 };
 // must initialize InCluster after Config::inCluster is completed.
 Config::inCluster Config::InCluster{};
+
+}  // namespace kube
+
+#endif
