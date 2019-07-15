@@ -2,17 +2,34 @@
 #ifndef KUBE_HEADER_CLUSTER
 #define KUBE_HEADER_CLUSTER
 
-#include <memory>
+#include <vector>
 #include "_config.hpp"
 
 namespace kube {
 
-class Cluster {};
+struct Namespace {
+  static Namespace All;
+};
 
-std::unique_ptr<Cluster> attach_cluster(const Config& cfg) {
+class Cluster {
+  config cfg;
+
+ public:
+  Cluster(config cfg) : cfg(cfg) {}
+
+  template <typename Resource>
+  Resource get(Namespace ns) {
+    return Resource();
+  }
+  template <typename Resource>
+  std::vector<Resource> list(Namespace ns) {
+    return std::vector<Resource>();
+  }
+};
+
+Cluster attach_cluster(const Config& cfg) {
   auto config = cfg.get_config();
-  // TODO: prepare cluster client data
-  return std::make_unique<Cluster>();
+  return Cluster(config);
 }
 
 }  // namespace kube

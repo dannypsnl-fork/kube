@@ -14,20 +14,14 @@ struct NotInCluster : public std::exception {
 };
 
 struct config {
-  std::string host;
-  std::string bearer_token;
+  // in cluster
+  bool in_cluster = false;
+  // or has a path
+  std::string path{""};
 
-  config() {}
-  config(std::string host, std::string bearer_token)
-      : host(host), bearer_token(bearer_token) {}
+  config(bool in_cluster) : in_cluster(in_cluster) {}
+  config(std::string path) : path(path) {}
 };
-bool operator==(config l_cfg, config r_cfg) {
-  if (l_cfg.host == r_cfg.host) {
-    return true;
-  } else {
-    return false;
-  }
-}
 
 struct Config {
   virtual config get_config() const = 0;
@@ -49,10 +43,7 @@ struct Config {
 struct Config::Path : public Config {
   Path() = delete;
   Path(std::string path) : _path(path) {}
-  config get_config() const {
-    // TODO: complete the config get by path
-    return config();
-  }
+  config get_config() const { return config(_path); }
 
  private:
   std::string _path;
@@ -69,14 +60,7 @@ struct Config::inCluster : public Config {
     if (is_empty(host) || is_empty(port)) {
       throw NotInCluster();
     }
-    std::ifstream token_file{
-        "/var/run/secrets/kubernetes.io/serviceaccount/token"};
-    std::string token{(std::istreambuf_iterator<char>(token_file)),
-                      (std::istreambuf_iterator<char>())};
-    // TODO: read ca file
-    std::ifstream root_ca_file{
-        "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"};
-    return config(host, token);
+    return config(true);
   }
 };
 // must initialize InCluster after Config::inCluster is completed.
