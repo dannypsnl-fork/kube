@@ -8,7 +8,7 @@ using kube::resource::Pod;
 TEST(Kube, Cluster) {
   auto cluster = kube::attach_cluster(Config::Path("~/.kube/config"));
 
-  cluster.get<Pod>(Namespace::All);
+  cluster.get<Pod>(Namespace::All, "nginx");
 }
 
 TEST(Kube, InCluster) {

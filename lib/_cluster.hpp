@@ -41,7 +41,7 @@ class Cluster {
   }
 
   template <typename Resource>
-  Resource get(Namespace ns) {
+  Resource get(Namespace ns, std::string resource_name) {
     return Resource();
   }
   template <typename Resource>
