@@ -2,14 +2,30 @@
 #ifndef KUBE_HEADER_CLUSTER
 #define KUBE_HEADER_CLUSTER
 
+#include <string>
 #include <vector>
 #include "_config.hpp"
 
 namespace kube {
 
 struct Namespace {
-  static Namespace All;
+  struct all;
+  static all All;
+
+  Namespace() {}
+  Namespace(std::string ns) : _namespace(ns) {}
+
+  std::string get_namespace() { return _namespace; };
+
+ private:
+  std::string _namespace;
 };
+
+struct Namespace::all : public Namespace {
+  all() {}
+  std::string get_namespace() { return ""; }
+};
+Namespace::all Namespace::All{};
 
 class Cluster {
  public:

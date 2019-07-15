@@ -14,5 +14,5 @@ TEST(Kube, Cluster) {
 TEST(Kube, InCluster) {
   auto cluster = kube::attach_cluster(Config::InCluster);
 
-  cluster.list<Pod>(Namespace::All);
+  cluster.list<Pod>(Namespace("kube-system"));
 }
