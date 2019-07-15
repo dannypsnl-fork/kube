@@ -12,10 +12,17 @@ struct Namespace {
 };
 
 class Cluster {
-  config cfg;
-
  public:
-  Cluster(config cfg) : cfg(cfg) {}
+  Cluster(const Config::inCluster in_cluster) {
+    // TODO:
+    // config, err := rest.InClusterConfig()
+    // clientset, err := kubernetes.NewForConfig(config)
+  }
+  Cluster(const Config::Path path) {
+    // TODO:
+    // config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
+    // clientset, err := kubernetes.NewForConfig(config)
+  }
 
   template <typename Resource>
   Resource get(Namespace ns) {
@@ -27,9 +34,9 @@ class Cluster {
   }
 };
 
-Cluster attach_cluster(const Config& cfg) {
-  auto config = cfg.get_config();
-  return Cluster(config);
+template <typename T>
+Cluster attach_cluster(T cfg) {
+  return Cluster(cfg);
 }
 
 }  // namespace kube
