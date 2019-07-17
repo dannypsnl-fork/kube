@@ -1,4 +1,3 @@
-
 #ifndef KUBE_HEADER_CLUSTER
 #define KUBE_HEADER_CLUSTER
 
