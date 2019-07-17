@@ -1,18 +1,19 @@
 #include "lib/kube.hpp"
 #include <gtest/gtest.h>
+#include <iostream>
 
 using kube::Config;
 using kube::Namespace;
 using kube::resource::Pod;
 
 TEST(Kube, Cluster) {
-  auto cluster = kube::attach_cluster(Config::Path("~/.kube/config"));
+  auto cluster =
+      kube::attach_cluster(Config::Path("/Users/dannypsnl/.kube/config"));
 
   cluster.get<Pod>(Namespace::All, "nginx");
 }
 
 TEST(Kube, InCluster) {
-  auto cluster = kube::attach_cluster(Config::InCluster);
-
-  cluster.list<Pod>(Namespace("kube-system"));
+  EXPECT_THROW(kube::attach_cluster(Config::InCluster),
+               kube::KubeWrapException);
 }

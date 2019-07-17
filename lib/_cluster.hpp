@@ -2,11 +2,23 @@
 #ifndef KUBE_HEADER_CLUSTER
 #define KUBE_HEADER_CLUSTER
 
+#include <cstdint>
+#include <exception>
+#include <iostream>
 #include <string>
 #include <vector>
 #include "_config.hpp"
+#include "kube_wrap.h"
 
 namespace kube {
+
+struct KubeWrapException : public std::exception {
+  KubeWrapException(std::string message) : _message(message) {}
+  const char* what() const throw() { return _message.c_str(); }
+
+ private:
+  std::string _message;
+};
 
 struct Namespace {
   struct all;
@@ -28,16 +40,26 @@ struct Namespace::all : public Namespace {
 Namespace::all Namespace::All{};
 
 class Cluster {
+  uintptr_t _clientset_id;
+
  public:
   Cluster(const Config::inCluster in_cluster) {
-    // TODO:
-    // config, err := rest.InClusterConfig()
-    // clientset, err := kubernetes.NewForConfig(config)
+    auto err = create_clientset_in_cluster(&_clientset_id);
+    if (err != nullptr) {
+      throw KubeWrapException(err);
+    }
   }
   Cluster(const Config::Path path) {
-    // TODO:
-    // config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
-    // clientset, err := kubernetes.NewForConfig(config)
+    auto err = create_clientset_with_config_file(
+        &_clientset_id, const_cast<char*>(path.path.c_str()));
+    if (err != nullptr) {
+      throw KubeWrapException(err);
+    }
+  }
+  ~Cluster() {
+    if (_clientset_id != 0) {
+      delete_clientset(_clientset_id);
+    }
   }
 
   template <typename Resource>
