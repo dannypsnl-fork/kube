@@ -4,7 +4,9 @@
 namespace kube {
 namespace resource {
 
-struct Pod {};
+struct Pod {
+  static const char *resource_type() { return "pods"; }
+};
 
 }  // namespace resource
 }  // namespace kube

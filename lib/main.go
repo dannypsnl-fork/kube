@@ -5,7 +5,9 @@ import "C"
 import (
 	"unsafe"
 
+	"k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 )
@@ -45,6 +47,45 @@ func newClientset(clientsetID *C.uintptr_t, cfg *rest.Config) *C.char {
 //export delete_clientset
 func delete_clientset(clientsetID C.uintptr_t) {
 	delete(clientsetMap, clientsetID)
+}
+
+//export get_resource
+func get_resource(clientsetID C.uintptr_t, namespace, resourceType, resourceName *C.char) (result *C.char, err *C.char) {
+	clientset, ok := clientsetMap[clientsetID]
+	if ok {
+		// FIXME: add a parameter for different version API, so we can get a workable REST Client
+		raw, err := clientset.CoreV1().RESTClient().
+			Get().
+			Namespace(C.GoString(namespace)).
+			Resource(C.GoString(resourceType)).
+			Name(C.GoString(resourceName)).
+			VersionedParams(&v1.GetOptions{}, scheme.ParameterCodec).
+			DoRaw()
+		if err != nil {
+			return nil, C.CString(err.Error())
+		}
+		return C.CString(string(raw)), nil
+	}
+	return nil, C.CString("no such clientset")
+}
+
+//export list_resource
+func list_resource(clientsetID C.uintptr_t, namespace, resourceType *C.char) (result *C.char, err *C.char) {
+	clientset, ok := clientsetMap[clientsetID]
+	if ok {
+		// FIXME: add a parameter for different version API, so we can get a workable REST Client
+		raw, err := clientset.CoreV1().RESTClient().
+			Get().
+			Namespace(C.GoString(namespace)).
+			Resource(C.GoString(resourceType)).
+			VersionedParams(&v1.ListOptions{}, scheme.ParameterCodec).
+			DoRaw()
+		if err != nil {
+			return nil, C.CString(err.Error())
+		}
+		return C.CString(string(raw)), nil
+	}
+	return nil, C.CString("no such clientset")
 }
 
 func main() {}

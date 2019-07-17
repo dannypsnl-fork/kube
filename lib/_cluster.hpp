@@ -4,7 +4,6 @@
 
 #include <cstdint>
 #include <exception>
-#include <iostream>
 #include <string>
 #include <vector>
 #include "_config.hpp"
@@ -64,10 +63,27 @@ class Cluster {
 
   template <typename Resource>
   Resource get(Namespace ns, std::string resource_name) {
+    auto ns1 = const_cast<char*>(ns.get_namespace().c_str());
+    auto name = const_cast<char*>(resource_name.c_str());
+    auto r_type = const_cast<char*>(Resource::resource_type());
+    auto result = get_resource(_clientset_id, ns1, r_type, name);
+    if (result.r1 != nullptr) {
+      throw KubeWrapException(result.r1);
+    }
+    // TODO: unmarshal result.r2 to get resource
+    // for that, we have to generate C++ class via protobuffer file from
+    // client-go(official kubernetes)
     return Resource();
   }
   template <typename Resource>
   std::vector<Resource> list(Namespace ns) {
+    auto ns1 = const_cast<char*>(ns.get_namespace().c_str());
+    auto r_type = const_cast<char*>(Resource::resource_type());
+    auto result = list_resource(_clientset_id, ns1, r_type);
+    if (result.r1 != nullptr) {
+      throw KubeWrapException(result.r1);
+    }
+    // TODO: unmarshal result.r2 to get resource
     return std::vector<Resource>();
   }
 };
