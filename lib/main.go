@@ -36,7 +36,7 @@ func newClientset(clientsetID *C.uintptr_t, cfg *rest.Config) *C.char {
 	if err != nil {
 		return C.CString(err.Error())
 	}
-	*clientsetID = C.uintptr_t(uintptr((unsafe.Pointer(clientset))))
+	*clientsetID = C.uintptr_t(uintptr(unsafe.Pointer(clientset)))
 	// TODO: mutex or sync.Map?
 	clientsetMap[*clientsetID] = clientset
 	return nil
