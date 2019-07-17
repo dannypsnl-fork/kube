@@ -9,7 +9,7 @@ Put the `./lib/`(run `make build` to get) directory into search path and write:
 #include "kube.hpp"
 ```
 
-Then you have to link object file `./lib/kube_wrap.a` into your binary.
+Then you have to link object file `./bazel-bin/lib/libkube.so` into your binary.
 
 ### Develop
 

@@ -6,10 +6,12 @@
 #include <string>
 #include <vector>
 #include "_config.hpp"
+#include "_namespace.hpp"
 #include "kube_wrap.h"
 
 namespace kube {
 
+// KubeWrapException wrapping the Go error message as C++ exception.
 struct KubeWrapException : public std::exception {
   KubeWrapException(std::string message) : _message(message) {}
   const char* what() const throw() { return _message.c_str(); }
@@ -18,47 +20,15 @@ struct KubeWrapException : public std::exception {
   std::string _message;
 };
 
-struct Namespace {
-  struct all;
-  static all All;
-
-  Namespace() {}
-  Namespace(std::string ns) : _namespace(ns) {}
-
-  std::string get_namespace() { return _namespace; };
-
- private:
-  std::string _namespace;
-};
-
-struct Namespace::all : public Namespace {
-  all() {}
-  std::string get_namespace() { return ""; }
-};
-Namespace::all Namespace::All{};
-
 class Cluster {
   uintptr_t _clientset_id;
 
  public:
-  Cluster(const Config::inCluster in_cluster) {
-    auto err = create_clientset_in_cluster(&_clientset_id);
-    if (err != nullptr) {
-      throw KubeWrapException(err);
-    }
-  }
-  Cluster(const Config::Path path) {
-    auto err = create_clientset_with_config_file(
-        &_clientset_id, const_cast<char*>(path.path.c_str()));
-    if (err != nullptr) {
-      throw KubeWrapException(err);
-    }
-  }
-  ~Cluster() {
-    if (_clientset_id != 0) {
-      delete_clientset(_clientset_id);
-    }
-  }
+  // create by in cluster config
+  Cluster(const Config::inCluster in_cluster);
+  // create by config path
+  Cluster(const Config::Path path);
+  ~Cluster();
 
   template <typename Resource>
   Resource get(Namespace ns, std::string resource_name) {

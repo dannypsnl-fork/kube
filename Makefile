@@ -6,6 +6,7 @@ build: lib/kube_wrap.a
 	@CC=clang bazel build //lib:kube
 format:
 	@clang-format -i $(shell find lib | grep hpp)
+	@clang-format -i $(shell find lib | grep cpp)
 	@clang-format -i $(shell find test | grep cpp)
 
 lib/kube_wrap.a: lib/main.go
