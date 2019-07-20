@@ -2,6 +2,20 @@
 
 A kubernetes C++ client
 
+### Dependencies
+
+#### Binary
+
+- pkg-config: https://linux.die.net/man/1/pkg-config
+- protoc
+- bazel
+- make
+- clang
+
+#### Library
+
+- lib protobuf: for `pkg-config --cflags --libs protobuf`
+
 ### Using
 
 Put the `./lib/`(run `make build` to get) directory into search path and write:
