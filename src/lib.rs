@@ -2,10 +2,20 @@ use libc::uintptr_t;
 use std::ffi::CString;
 use std::os::raw::c_char;
 
+mod resource;
+use resource::Resource;
+
 #[derive(Debug)]
 pub enum KubeError {
     GetWithoutNamespace,
     Wrap(String),
+    Utf8Error(std::str::Utf8Error),
+}
+
+impl std::convert::From<std::str::Utf8Error> for KubeError {
+    fn from(e: std::str::Utf8Error) -> KubeError {
+        KubeError::Utf8Error(e)
+    }
 }
 
 type Result<T> = std::result::Result<T, KubeError>;
@@ -33,7 +43,8 @@ impl Cluster {
             let s = unsafe { CString::from_raw(error_message) };
             Err(KubeError::Wrap(s.into_string().unwrap()))
         } else {
-            Ok(T::new())
+            let c_s = unsafe { CString::from_raw(wrap_result.result) };
+            Ok(T::from_str(c_s.to_str()?))
         }
     }
     pub fn list<T: Resource>(&self, namespace: Namespace) -> Result<Vec<T>> {
@@ -84,22 +95,6 @@ pub enum Config<'a> {
     Path(&'a str),
 }
 
-pub trait Resource {
-    fn new() -> Self;
-    fn resource_type() -> String;
-}
-
-pub struct Pod {}
-
-impl Resource for Pod {
-    fn new() -> Pod {
-        Pod {}
-    }
-    fn resource_type() -> String {
-        "pods".to_string()
-    }
-}
-
 #[repr(C)]
 struct WrapResult {
     result: *mut c_char,
@@ -125,16 +120,4 @@ extern "C" {
         namespace: *const c_char,
         resource_type: *const c_char,
     ) -> WrapResult;
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    #[test]
-    fn get_pod() {
-        let cluster = attach_cluster(Config::Path("/Users/dannypsnl/.kube/config")).unwrap();
-        cluster
-            .get::<Pod>(Namespace::Namespace("default"), "nginx")
-            .unwrap();
-    }
 }
