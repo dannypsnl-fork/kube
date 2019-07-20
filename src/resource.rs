@@ -33,6 +33,7 @@ pub struct ObjectMeta {
 pub struct Pod {
     #[serde(flatten)]
     type_meta: TypeMeta,
+    metadata: Option<ObjectMeta>,
 }
 
 impl Resource for Pod {
@@ -80,5 +81,9 @@ mod tests {
         });
         let pod = Pod::from_str(json_str.to_string().as_str());
         assert_eq!(pod.type_meta.kind.unwrap(), "Pod");
+        assert_eq!(
+            pod.metadata.unwrap().name.unwrap(),
+            "debug-849b8df67f-bstn4"
+        );
     }
 }
