@@ -15,7 +15,7 @@ pub struct Cluster {
 }
 
 impl Cluster {
-    pub fn get<'a, T: Resource>(&self, namespace: Namespace, resource_name: &'a str) -> Result<T> {
+    pub fn get<T: Resource>(&self, namespace: Namespace, resource_name: &str) -> Result<T> {
         let wrap_result = unsafe {
             let ns_str = match namespace {
                 Namespace::All => Err(KubeError::GetWithoutNamespace),
