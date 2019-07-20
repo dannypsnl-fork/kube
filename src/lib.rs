@@ -36,7 +36,7 @@ impl Cluster {
             Ok(T::new())
         }
     }
-    pub fn list<T: Resource>(&self, namespace: Namespace) -> Result<T> {
+    pub fn list<T: Resource>(&self, namespace: Namespace) -> Result<Vec<T>> {
         let wrap_result = unsafe {
             let ns_str = match namespace {
                 Namespace::All => "",
@@ -53,7 +53,7 @@ impl Cluster {
             let s = unsafe { CString::from_raw(error_message) };
             Err(KubeError::Wrap(s.into_string().unwrap()))
         } else {
-            Ok(T::new())
+            Ok(vec![])
         }
     }
 }
