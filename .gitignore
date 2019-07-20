@@ -1,2 +1,12 @@
-bazel-*
-!.clang-format
+#Added by cargo
+#
+#already existing elements are commented out
+
+/target
+**/*.rs.bk
+Cargo.lock
+
+#Manually
+#
+*.so
+libkube_wrap.h
