@@ -5,6 +5,7 @@ A kubernetes client
 ### Usage
 
 ```rust
+use kube::resource::Pod;
 use kube::Config;
 use kube::Namespace;
 
