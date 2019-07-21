@@ -69,6 +69,14 @@ impl Cluster {
     }
 }
 
+impl Drop for Cluster {
+    fn drop(&mut self) {
+        unsafe {
+            delete_clientset(self.clientset);
+        }
+    }
+}
+
 pub fn attach_cluster(cfg: Config) -> Result<Cluster> {
     let mut clientset: uintptr_t = 0;
     let error_message = match cfg {
@@ -108,6 +116,7 @@ extern "C" {
         clientset_ptr: *mut uintptr_t,
         config_path: *const c_char,
     ) -> *mut c_char;
+    fn delete_clientset(clientset_ptr: uintptr_t);
 
     fn get_resource(
         clientset_ptr: uintptr_t,
