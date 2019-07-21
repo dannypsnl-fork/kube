@@ -2,7 +2,7 @@ use libc::uintptr_t;
 use std::ffi::CString;
 use std::os::raw::c_char;
 
-mod resource;
+pub mod resource;
 use resource::Resource;
 
 #[derive(Debug)]
