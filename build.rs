@@ -6,13 +6,20 @@ fn main() {
         .args(&[
             "build",
             "-o",
-            "libkube_wrap.so",
-            "-buildmode=c-shared",
+            "libkube_wrap.a",
+            "-buildmode=c-archive",
             "main.go",
         ])
         .status()
-        .unwrap();
+        .expect("failed at build Go static library");
 
-    println!("cargo:rustc-link-lib=dylib=kube_wrap");
+    let target = std::env::var("TARGET").unwrap();
+
+    if target.contains("-apple") {
+        println!("cargo:rustc-link-lib=framework=CoreFoundation");
+        println!("cargo:rustc-link-lib=framework=Security");
+    }
+
+    println!("cargo:rustc-link-lib=static=kube_wrap");
     println!("cargo:rustc-link-search=native=.");
 }

@@ -8,5 +8,5 @@ Cargo.lock
 
 #Manually
 #
-*.so
+*.a
 libkube_wrap.h
