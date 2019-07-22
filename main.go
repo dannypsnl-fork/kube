@@ -3,15 +3,17 @@ package main
 // #include <stdint.h>
 import "C"
 import (
+	"sync"
 	"unsafe"
 
-	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
+var clientsetMutex sync.Mutex
 var clientsetMap = map[C.uintptr_t]*kubernetes.Clientset{}
 
 //export create_clientset_in_cluster
@@ -40,12 +42,16 @@ func newClientset(clientsetID *C.uintptr_t, cfg *rest.Config) *C.char {
 	}
 	*clientsetID = C.uintptr_t(uintptr(unsafe.Pointer(clientset)))
 	// TODO: mutex or sync.Map?
+	clientsetMutex.Lock()
+	defer clientsetMutex.Unlock()
 	clientsetMap[*clientsetID] = clientset
 	return nil
 }
 
 //export delete_clientset
 func delete_clientset(clientsetID C.uintptr_t) {
+	clientsetMutex.Lock()
+	defer clientsetMutex.Unlock()
 	delete(clientsetMap, clientsetID)
 }
 
@@ -59,7 +65,7 @@ func get_resource(clientsetID C.uintptr_t, namespace, resourceType, resourceName
 			Namespace(C.GoString(namespace)).
 			Resource(C.GoString(resourceType)).
 			Name(C.GoString(resourceName)).
-			VersionedParams(&v1.GetOptions{}, scheme.ParameterCodec).
+			VersionedParams(&metav1.GetOptions{}, scheme.ParameterCodec).
 			DoRaw()
 		if err != nil {
 			return nil, C.CString(err.Error())
@@ -78,7 +84,7 @@ func list_resource(clientsetID C.uintptr_t, namespace, resourceType *C.char) (re
 			Get().
 			Namespace(C.GoString(namespace)).
 			Resource(C.GoString(resourceType)).
-			VersionedParams(&v1.ListOptions{}, scheme.ParameterCodec).
+			VersionedParams(&metav1.ListOptions{}, scheme.ParameterCodec).
 			DoRaw()
 		if err != nil {
 			return nil, C.CString(err.Error())
