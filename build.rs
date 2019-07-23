@@ -3,6 +3,7 @@ use std::process::Command;
 fn main() {
     // build Go c-shared library
     Command::new("go")
+        .env("GO111MODULE", "on")
         .args(&[
             "build",
             "-o",
