@@ -1,19 +1,21 @@
+use super::Result;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-pub trait Resource {
-    fn from_str(s: &str) -> Self;
+pub trait Resource: Sized {
+    fn from_str(s: &str) -> Result<Self>;
+    fn from_str_to_list(s: &str) -> Result<List<Self>>;
     fn resource_type() -> String;
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct TypeMeta {
     kind: Option<String>,
     api_version: Option<String>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ObjectMeta {
     name: Option<String>,
@@ -29,20 +31,33 @@ pub struct ObjectMeta {
     cluster_name: Option<String>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Default)]
 pub struct Pod {
     #[serde(flatten)]
-    type_meta: TypeMeta,
-    metadata: Option<ObjectMeta>,
+    pub type_meta: TypeMeta,
+    pub metadata: Option<ObjectMeta>,
 }
 
 impl Resource for Pod {
-    fn from_str(s: &str) -> Pod {
-        serde_json::from_str(s).expect("serde fail")
+    fn from_str(s: &str) -> Result<Pod> {
+        let pod = serde_json::from_str(s)?;
+        Ok(pod)
+    }
+    fn from_str_to_list(s: &str) -> Result<List<Pod>> {
+        let pod_list = serde_json::from_str(s)?;
+        Ok(pod_list)
     }
     fn resource_type() -> String {
         "pods".to_string()
     }
+}
+
+#[derive(Serialize, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct List<T> {
+    #[serde(flatten)]
+    pub type_meta: TypeMeta,
+    pub items: Vec<T>,
 }
 
 #[cfg(test)]
@@ -79,11 +94,22 @@ mod tests {
                 "uid": "ab1a815a-aaf0-11e9-ba86-025000000001"
             }
         });
-        let pod = Pod::from_str(json_str.to_string().as_str());
+        let pod = Pod::from_str(json_str.to_string().as_str()).unwrap();
         assert_eq!(pod.type_meta.kind.unwrap(), "Pod");
         assert_eq!(
             pod.metadata.unwrap().name.unwrap(),
             "debug-849b8df67f-bstn4"
         );
+    }
+
+    #[test]
+    fn pod_list_from_str() {
+        let pod_list_str = json!({
+            "apiVersion": "v1",
+            "kind": "List",
+            "items": []
+        });
+        let pod_list = Pod::from_str_to_list(pod_list_str.to_string().as_str()).unwrap();
+        assert_eq!(pod_list.items.len(), 0);
     }
 }

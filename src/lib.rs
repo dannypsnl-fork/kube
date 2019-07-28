@@ -1,4 +1,6 @@
 use libc::uintptr_t;
+use serde_json;
+use std::convert::From;
 use std::ffi::CString;
 use std::os::raw::c_char;
 
@@ -10,11 +12,17 @@ pub enum KubeError {
     GetWithoutNamespace,
     Wrap(String),
     Utf8Error(std::str::Utf8Error),
+    Serde(serde_json::error::Error),
 }
 
 impl std::convert::From<std::str::Utf8Error> for KubeError {
     fn from(e: std::str::Utf8Error) -> KubeError {
         KubeError::Utf8Error(e)
+    }
+}
+impl From<serde_json::error::Error> for KubeError {
+    fn from(e: serde_json::error::Error) -> KubeError {
+        KubeError::Serde(e)
     }
 }
 
@@ -44,10 +52,10 @@ impl Cluster {
             Err(KubeError::Wrap(s.into_string().unwrap()))
         } else {
             let c_s = unsafe { CString::from_raw(wrap_result.result) };
-            Ok(T::from_str(c_s.to_str()?))
+            T::from_str(c_s.to_str()?)
         }
     }
-    pub fn list<T: Resource>(&self, namespace: Namespace) -> Result<Vec<T>> {
+    pub fn list<T: Resource>(&self, namespace: Namespace) -> Result<resource::List<T>> {
         let wrap_result = unsafe {
             let ns_str = match namespace {
                 Namespace::All => "",
@@ -64,7 +72,8 @@ impl Cluster {
             let s = unsafe { CString::from_raw(error_message) };
             Err(KubeError::Wrap(s.into_string().unwrap()))
         } else {
-            Ok(vec![])
+            let c_s = unsafe { CString::from_raw(wrap_result.result) };
+            T::from_str_to_list(c_s.to_str()?)
         }
     }
 }
