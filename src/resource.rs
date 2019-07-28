@@ -8,14 +8,14 @@ pub trait Resource: Sized {
     fn resource_type() -> String;
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Debug, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct TypeMeta {
     kind: Option<String>,
     api_version: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Debug, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ObjectMeta {
     name: Option<String>,
@@ -31,7 +31,7 @@ pub struct ObjectMeta {
     cluster_name: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Debug, Serialize, Deserialize, Default)]
 pub struct Pod {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
@@ -54,7 +54,7 @@ impl Resource for Pod {
     }
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Debug, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct List<T> {
     #[serde(flatten)]
