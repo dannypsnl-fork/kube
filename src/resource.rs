@@ -36,6 +36,8 @@ pub struct Pod {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
     pub metadata: Option<ObjectMeta>,
+    // TODO: spec
+    // TODO: status
 }
 
 impl Resource for Pod {
@@ -57,6 +59,7 @@ impl Resource for Pod {
 pub struct List<T> {
     #[serde(flatten)]
     pub type_meta: TypeMeta,
+    // TODO: metadata
     pub items: Vec<T>,
 }
 
