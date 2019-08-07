@@ -15,13 +15,15 @@ func main() {
 	g := NewGenerator()
 	g.generateStruct(podType)
 
+	fmt.Println("use std::collections::HashMap;")
 	for _, t := range g.TypeEnv {
 		fmt.Printf("%s\n", t.Definition())
 	}
 }
 
 type Generator struct {
-	TypeEnv map[string]Type
+	TypeEnv      map[string]Type
+	rustKeywords map[string]bool
 }
 
 type Type interface {
@@ -184,6 +186,10 @@ func NewGenerator() *Generator {
 	}
 	return &Generator{
 		TypeEnv: tenv,
+		rustKeywords: map[string]bool{
+			"type":     true,
+			"continue": true,
+		},
 	}
 }
 
@@ -242,24 +248,36 @@ func (g *Generator) generateStruct(typ reflect.Type) Type {
 		switch attr {
 		case "omitempty":
 			if ok {
-				rs.Fields = append(rs.Fields, Field{
-					Accessibility: "pub",
-					Notation:      "",
-					Name:          name,
-					Type:          &TOption{TypeParameter: g.generateStruct(f.Type)},
-				})
+				rs.Fields = append(rs.Fields, g.newField(
+					"pub",
+					"",
+					name,
+					&TOption{TypeParameter: g.generateStruct(f.Type)},
+				))
 			}
 		case "inline":
 			name := f.Name
 			if ok {
-				rs.Fields = append(rs.Fields, Field{
-					Accessibility: "pub",
-					Notation:      "#[serde(flatten)]",
-					Name:          name,
-					Type:          g.generateStruct(f.Type),
-				})
+				rs.Fields = append(rs.Fields, g.newField(
+					"pub",
+					"#[serde(flatten)]",
+					name,
+					g.generateStruct(f.Type),
+				))
 			}
 		}
 	}
 	return rs
+}
+
+func (g *Generator) newField(accessibility, notation, name string, typ Type) Field {
+	if g.rustKeywords[name] {
+		name = "r#" + name
+	}
+	return Field{
+		Accessibility: accessibility,
+		Notation:      notation,
+		Name:          name,
+		Type:          typ,
+	}
 }
