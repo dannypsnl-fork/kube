@@ -261,6 +261,5 @@ func (g *Generator) generateStruct(typ reflect.Type) Type {
 			}
 		}
 	}
-	g.TypeEnv[rs.Name] = rs
 	return rs
 }
