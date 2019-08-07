@@ -72,9 +72,7 @@ type THashMap struct {
 }
 
 func (h *THashMap) String() string {
-	return "HashMap<" + h.TypeParameterKey.String() + ", " +
-		//h.TypeParameterValue.String() +
-		">"
+	return "HashMap<" + h.TypeParameterKey.String() + ", " + h.TypeParameterValue.String() + ">"
 }
 
 type TVector struct {
@@ -128,8 +126,8 @@ func (r *TStructure) Definition() string {
 
 func NewGenerator() *Generator {
 	tenv := map[string]Type{
-		"String": &TString{},
-		"Int":    &TInt{},
+		"string": &TString{},
+		"int":    &TInt{},
 	}
 	return &Generator{
 		TypeEnv: tenv,
@@ -137,11 +135,11 @@ func NewGenerator() *Generator {
 }
 
 func (g *Generator) generateStruct(typ reflect.Type) Type {
+	t, ok := g.TypeEnv[typ.Name()]
+	if ok {
+		return t
+	}
 	switch typ.Kind() {
-	case reflect.String:
-		return g.TypeEnv["String"]
-	case reflect.Int:
-		return g.TypeEnv["Int"]
 	case reflect.Ptr:
 		return g.generateStruct(typ.Elem())
 	case reflect.Map:
@@ -155,10 +153,6 @@ func (g *Generator) generateStruct(typ reflect.Type) Type {
 			TypeParameter: g.generateStruct(typ.Elem()),
 		}
 	case reflect.Struct:
-		t, ok := g.TypeEnv[typ.Name()]
-		if ok {
-			return t
-		}
 	default:
 		t, ok := g.TypeEnv[typ.Name()]
 		if ok {
@@ -177,6 +171,7 @@ func (g *Generator) generateStruct(typ reflect.Type) Type {
 		Name:          typ.Name(),
 		Fields:        make([]Field, 0),
 	}
+	g.TypeEnv[typ.Name()] = rs
 	for i := 0; i < typ.NumField(); i++ {
 		f := typ.Field(i)
 		tag, ok := f.Tag.Lookup("json")
@@ -204,10 +199,6 @@ func (g *Generator) generateStruct(typ reflect.Type) Type {
 			}
 		case "inline":
 			name := f.Name
-			if f.Type.Kind() == reflect.Map {
-				fmt.Println(name)
-				panic("")
-			}
 			if ok {
 				rs.Fields = append(rs.Fields, Field{
 					Accessibility: "pub",
