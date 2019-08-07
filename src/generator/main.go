@@ -30,6 +30,18 @@ type Type interface {
 	Definition() string
 }
 
+type TBool struct {
+	Type
+}
+
+func (s *TBool) String() string {
+	return "bool"
+}
+
+func (s *TBool) Definition() string {
+	return ""
+}
+
 type TString struct {
 	Type
 }
@@ -39,19 +51,48 @@ func (s *TString) String() string {
 }
 
 func (s *TString) Definition() string {
-	return "String is built in"
+	return ""
 }
 
 type TInt struct {
 	Type
+
+	Signed bool
+	Width  uint
 }
 
 func (i *TInt) String() string {
-	return "int"
+	if !i.Signed {
+		if i.Width == 0 {
+			return "uint"
+		} else {
+			return fmt.Sprintf("u%d", i.Width)
+		}
+	} else {
+		if i.Width == 0 {
+			return "int"
+		} else {
+			return fmt.Sprintf("i%d", i.Width)
+		}
+	}
 }
 
 func (i *TInt) Definition() string {
-	return "Int is built in"
+	return ""
+}
+
+type TFloat struct {
+	Type
+
+	Width uint
+}
+
+func (f *TFloat) String() string {
+	return fmt.Sprintf("f%d", f.Width)
+}
+
+func (f *TFloat) Definition() string {
+	return ""
 }
 
 type TOption struct {
@@ -126,8 +167,20 @@ func (r *TStructure) Definition() string {
 
 func NewGenerator() *Generator {
 	tenv := map[string]Type{
-		"string": &TString{},
-		"int":    &TInt{},
+		"bool":    &TBool{},
+		"string":  &TString{},
+		"int":     &TInt{Signed: true},
+		"int8":    &TInt{Signed: true, Width: 8},
+		"int16":   &TInt{Signed: true, Width: 16},
+		"int32":   &TInt{Signed: true, Width: 32},
+		"int64":   &TInt{Signed: true, Width: 64},
+		"uint":    &TInt{},
+		"uint8":   &TInt{Width: 8},
+		"uint16":  &TInt{Width: 16},
+		"uint32":  &TInt{Width: 32},
+		"uint64":  &TInt{Width: 64},
+		"float32": &TFloat{Width: 32},
+		"float64": &TFloat{Width: 64},
 	}
 	return &Generator{
 		TypeEnv: tenv,
@@ -143,7 +196,6 @@ func (g *Generator) generateStruct(typ reflect.Type) Type {
 	case reflect.Ptr:
 		return g.generateStruct(typ.Elem())
 	case reflect.Map:
-		fmt.Printf("key: %s, element: %s\n", typ.Key(), typ.Elem())
 		return &THashMap{
 			TypeParameterKey:   g.generateStruct(typ.Key()),
 			TypeParameterValue: g.generateStruct(typ.Elem()),
